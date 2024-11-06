@@ -136,6 +136,7 @@ function main() {
     gl.vertexAttribPointer(colorLocation, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(colorLocation);
     gl.drawArrays(gl.TRIANGLE_FAN, 0, n +2);
+    
     //olhos
     gl.bindBuffer(gl.ARRAY_BUFFER, circlePositionBuffer);
     setCircleVertices(gl, 0.22, 0.15, n, 0.1);
