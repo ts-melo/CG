@@ -167,12 +167,17 @@ function main() {
   drawSquare();
 }
 function checkCircleRectangleCollision(circle, rect, shift) {
-  // Update the Y-axis to account for the vertical shift of the rectangles
-  let distX = Math.abs(circle.x - (rect.x + rect.width / 2));
-  let distY = Math.abs(circle.y - ((rect.y + shift) + rect.height / 2));
+  const bbox = {
+    x: rect.x,
+    y: rect.y,
+    width: rect.width,
+    height: rect.height,
+  };
 
-  // Adjust the distance checks
-  if (distX <= (rect.width / 2 + circle.radius) && distY <= (rect.height / 2 + circle.radius)) {
+  let distX = Math.abs(circle.x - (bbox.x));
+  let distY = Math.abs(circle.y - (bbox.y));
+
+  if (distX <= (bbox.width / 2 + circle.radius) && distY <= (bbox.height / 2 + circle.radius)) {
     return true;
   }
   return false;

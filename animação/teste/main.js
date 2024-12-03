@@ -23,7 +23,6 @@ function main() {
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-
   const matrixUniformLocation = gl.getUniformLocation(program, `matrix`);
   const colorUniformLocation = gl.getUniformLocation(program, `color`);
 
@@ -31,9 +30,8 @@ function main() {
   gl.clearColor(1.0, 1.0, 1.0, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-
   let positionVector = [];
-  const numSegments = 50; // Higher number for a smoother circle
+  const numSegments = 50;
   const radius = 0.3;
 
   for (let i = 0; i <= numSegments; i++) {
@@ -46,24 +44,23 @@ function main() {
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionVector), gl.STATIC_DRAW);
 
-
   let rectanglePositionVector = [
-    -0.75, 0.5,
-    -0.75, 0,
-    -0.4, 0.5,
-    -0.75, 0,
-    -0.4, 0,
-    -0.4, 0.5,
+    -0.9, 0.5,
+    -0.9, 0,
+    -0.7, 0.5,
+    -0.9, 0,
+    -0.7, 0,
+    -0.7, 0.5,
   ];
   const rectanglePositionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, rectanglePositionBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rectanglePositionVector), gl.STATIC_DRAW);
 
   let rectangle2PositionVector = [
-    1, 0.5,
-    1, 0,
+    0.9, 0.5,
+    0.9, 0,
     0.7, 0.5,
-    1, 0,
+    0.9, 0,
     0.7, 0,
     0.7, 0.5,
   ];
@@ -71,23 +68,28 @@ function main() {
   gl.bindBuffer(gl.ARRAY_BUFFER, rectangle2PositionBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rectangle2PositionVector), gl.STATIC_DRAW);
 
-
-  let r1y = 0.1;
-  let r2y = 0.0;
+  let up = false;
+  let down = false;
+  let w = false;
+  let s = false;
 
   window.addEventListener("keydown", (event) => {
     switch (event.key) {
       case "ArrowUp":
-        r2y += 0.05;  // Move retângulo direito para cima
+        up = true;
+        down = false;
         break;
       case "ArrowDown":
-        r2y -= 0.05;  // Move retângulo direito para baixo
+        down = true;
+        up = false;
         break;
       case "w":
-        r1y += 0.05;  // Move retângulo esquerdo para cima
+        w = true;
+        s = false;
         break;
-      case "a":
-        r1y -= 0.05;  // Move retângulo esquerdo para baixo
+      case "s":
+        s = true;
+        w = false;
         break;
     }
   });
@@ -99,39 +101,57 @@ function main() {
     velocityX: 0.01,
     velocityY: 0.02,
   };
+
   const rect1BoundingBox = getBoundingBoxFromVertices(rectanglePositionVector);
-  rect1BoundingBox.y += r1y;
   const rect2BoundingBox = getBoundingBoxFromVertices(rectangle2PositionVector);
-  rect2BoundingBox.y += r2y;
+
+  function updatePaddle() {
+    if (w && rect1BoundingBox.y < 1.0) {
+      rect1BoundingBox.y += 0.05;
+      w = false;
+    }
+    if (s && rect1BoundingBox.y > -1.0 - rect1BoundingBox.height) {
+      rect1BoundingBox.y -= 0.05;
+      s = false;
+    }
+
+    if (up && rect2BoundingBox.y < 1.0) {
+      rect2BoundingBox.y += 0.05;
+      up = false;
+    }
+    if (down && rect2BoundingBox.y > -1.0 - rect2BoundingBox.height) {
+      rect2BoundingBox.y -= 0.05;
+      down = false;
+    }
+  }
 
   function drawSquare() {
     gl.clear(gl.COLOR_BUFFER_BIT);
-    const isCollision1 = checkCircleRectangleCollision(circle, rect1BoundingBox);
-    const isCollision2 = checkCircleRectangleCollision(circle, rect2BoundingBox);
 
-    if (isCollision1 || isCollision2) {
-      circle.velocityX = -circle.velocityX; 
-      circle.velocityY = -circle.velocityY;  
-      circle.y += circle.velocityY* 0.05;
-      circle.x += circle.velocityX * 0.05;
-    }
-    if (circle.y > 1.0 || circle.y < -1.0) {
-      circle.velocityY = -circle.velocityY;
-    }
-    circle.y += circle.velocityY;
-    if (circle.x > 1.0 || circle.x < -1.0) {
-      circle.velocityX = -circle.velocityX;
-    }
-
-    // Update circle position
+    // Update circle position (automatic movement)
     circle.y += circle.velocityY;
     circle.x += circle.velocityX;
 
+    updatePaddle();
 
-    // Desenha o círculo
+    // Collision detection
+    if (
+      checkCircleRectangleCollision(circle, rect1BoundingBox) ||
+      checkCircleRectangleCollision(circle, rect2BoundingBox)
+    ) {
+      circle.velocityX = -circle.velocityX;
+    }
+
+    if (circle.y + circle.radius > 1.0 || circle.y - circle.radius <= -1.0) {
+      circle.velocityY = -circle.velocityY;
+    }
+    if (circle.x + circle.radius > 1.0 || circle.x - circle.radius < -1.0) {
+      circle.velocityX = -circle.velocityX;
+    }
+
+    // Draw the circle
     let matrix = m4.identity();
     matrix = m4.translate(matrix, circle.x, circle.y, 0.0);
-    //matrix = m4.zRotate(matrix, degToRad(theta));
     matrix = m4.scale(matrix, 0.25, 0.25, 1.0);
     gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
     let colorVector = [0, 0, 0];
@@ -140,10 +160,9 @@ function main() {
     gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_FAN, 0, positionVector.length / 2);
 
-
-    // Desenha o retângulo direito (movido com 'ArrowUp' e 'ArrowDown')
+    // Draw the rectangles
     let rectangleMatrix2 = m4.identity();
-    rectangleMatrix2 = m4.translate(rectangleMatrix2, rect2BoundingBox.x, rect2BoundingBox.y + r2y, 0.0);
+    rectangleMatrix2 = m4.translate(rectangleMatrix2, rect2BoundingBox.x, rect2BoundingBox.y, 0.0);
     rectangleMatrix2 = m4.scale(rectangleMatrix2, rect2BoundingBox.width, rect2BoundingBox.height, 1.0);
     gl.uniformMatrix4fv(matrixUniformLocation, false, rectangleMatrix2);
     gl.uniform3fv(colorUniformLocation, [0.0, 0.5, 0.5]);
@@ -151,49 +170,66 @@ function main() {
     gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-    // Desenha o retângulo esquerdo (movido com 'w' e 's')
     let rectangleMatrix = m4.identity();
-    rectangleMatrix = m4.translate(rectangleMatrix, rect1BoundingBox.x, rect1BoundingBox.y + r1y, 0.0);
+    rectangleMatrix = m4.translate(rectangleMatrix, rect1BoundingBox.x, rect1BoundingBox.y, 0.0);
     rectangleMatrix = m4.scale(rectangleMatrix, rect1BoundingBox.width, rect1BoundingBox.height, 1.0);
     gl.uniformMatrix4fv(matrixUniformLocation, false, rectangleMatrix);
     gl.uniform3fv(colorUniformLocation, [0.0, 0.5, 0.5]);
     gl.bindBuffer(gl.ARRAY_BUFFER, rectanglePositionBuffer);
     gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-
+    console.log("Circle position:", circle.x, circle.y);
+    console.log("Rect 1 Bounding Box:", rect1BoundingBox);
+    console.log("Collision:", checkCircleRectangleCollision(circle, rect1BoundingBox));
     requestAnimationFrame(drawSquare);
   }
+
   drawSquare();
 }
-function checkCircleRectangleCollision(circle, rect) {
-  // Update the Y-axis to account for the vertical shift of the rectangles
-  let distX = Math.abs(circle.x - (rect.x + rect.width / 2));
-  let distY = Math.abs(circle.y - ((rect.y ) + rect.height / 2));
 
-  // Adjust the distance checks
-  if (distX <= (rect.width / 2 + circle.radius) && distY <= (rect.height / 2 + circle.radius)) {
+function checkCircleRectangleCollision(circle, rect) {
+  const bbox = {
+    x: rect.x,
+    y: rect.y,
+    width: rect.width,
+    height: rect.height,
+  };
+
+  let distX = Math.abs(circle.x - (bbox.x));
+  let distY = Math.abs(circle.y - (bbox.y));
+
+  if (distX <= (bbox.width / 2 + circle.radius) && distY <= (bbox.height / 2 + circle.radius)) {
     return true;
   }
   return false;
 }
-// Function to get the bounding box from a rectangle's vertex array
-function getBoundingBoxFromVertices(vertices) {
-  const xValues = [vertices[0], vertices[2], vertices[4], vertices[6]];
-  const yValues = [vertices[1], vertices[3], vertices[5], vertices[7]];
 
+function getBoundingBoxFromVertices(vertices) {
+  // Collect all x and y values from the vertices array
+  let xValues = [];
+  let yValues = [];
+  
+  // Iterate through the vertices array in pairs (x, y)
+  for (let i = 0; i < vertices.length; i += 2) {
+    xValues.push(vertices[i]);     // Even indices for x-values
+    yValues.push(vertices[i + 1]); // Odd indices for y-values
+  }
+
+  // Calculate the minimum and maximum x and y values
   const xMin = Math.min(...xValues);
   const xMax = Math.max(...xValues);
   const yMin = Math.min(...yValues);
   const yMax = Math.max(...yValues);
 
+  // Return the bounding box (center and size)
   return {
-    x: xMin,
-    y: yMin,
-    width: Math.abs(xMax - xMin),
-    height: Math.abs(yMax - yMin)
+    x: (xMin + xMax) / 2, // Center x
+    y: (yMin + yMax) / 2, // Center y
+    width: Math.abs(xMax - xMin),  // Width of the bounding box
+    height: Math.abs(yMax - yMin)  // Height of the bounding box
   };
 }
+
 
 
 function createShader(gl, type, source) {
