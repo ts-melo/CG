@@ -102,50 +102,50 @@ function main(){
 
 
          //terceiro
-         gl.viewport(0,0,canvas.width/2, canvas.width/2);
+        gl.viewport(0,0,canvas.width/2, canvas.width/2);
 
-         if(x_offset > 2 || x_offset<-2)
-             x_step = -x_step
-         x_offset += x_step
+        if(x_offset > 2 || x_offset<-2)
+            x_step = -x_step
+        x_offset += x_step
  
-         P0 = [1.0, 1.0+x_offset, 1.0];//camera anda no eixo x
-         P_ref = [0.0,0.0+x_offset,0.0]; //aponta pra origem, anda no eixo x
-         V = [0.0,1.0,0.0]; // y view 
-         viewingMatrix = set3dViewingMatrix(P0,P_ref,V);
-         xw_min = -2.0;
-         xw_max = 2.0;
-         yw_min = -2.0;
-         yw_max = 2.0;
-         z_near = 0.0;
-         z_far = -4.0;
-         ortographicMatrix = ortographicProjection(xw_min,xw_max,yw_min,yw_max,z_near,z_far);
-         matrix = m4.identity();
-         matrix = m4.multiply(matrix,ortographicMatrix);
-         matrix = m4.multiply(matrix,viewingMatrix);
-         gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
-         gl.drawArrays(gl.TRIANGLES, 0, vertexData.length / 3);
+        P0 = [1.0, 1.0+x_offset, 1.0];//camera anda no eixo x
+        P_ref = [0.0,0.0+x_offset,0.0]; //aponta pra origem, anda no eixo x
+        V = [0.0,1.0,0.0]; // y view 
+        viewingMatrix = set3dViewingMatrix(P0,P_ref,V);
+        xw_min = -2.0;
+        xw_max = 2.0;
+        yw_min = -2.0;
+        yw_max = 2.0;
+        z_near = 0.0;
+        z_far = -4.0;
+        ortographicMatrix = ortographicProjection(xw_min,xw_max,yw_min,yw_max,z_near,z_far);
+        matrix = m4.identity();
+        matrix = m4.multiply(matrix,ortographicMatrix);
+        matrix = m4.multiply(matrix,viewingMatrix);
+        gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
+        gl.drawArrays(gl.TRIANGLES, 0, vertexData.length / 3);
 
         //quarto
-         gl.viewport(canvas.width/2,0,canvas.width/2, canvas.width/2);
-         if(w>=2.0 || w<=0.5)
-            w_step = -w_step;
-          w += w_step;
-         P0 = [1.0, 1.0, 1.0];//camera anda no eixo x
-         P_ref = [0.0,0.0,0.0]; //aponta pra origem, anda no eixo x
-         V = [0.0,1.0,0.0]; // y view 
-         viewingMatrix = set3dViewingMatrix(P0,P_ref,V);
-         xw_min = -2.0;
-         xw_max = 2.0;
-         yw_min = -2.0;
-         yw_max = 2.0;
-         z_near = 0.0;
-         z_far = -4.0;
-         ortographicMatrix = ortographicProjection(-w,w,-w,w,z_near,z_far);
-         matrix = m4.identity();
-         matrix = m4.multiply(matrix,ortographicMatrix);
-         matrix = m4.multiply(matrix,viewingMatrix);
-         gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
-         gl.drawArrays(gl.TRIANGLES, 0, vertexData.length / 3);
+        gl.viewport(canvas.width/2,0,canvas.width/2, canvas.width/2);
+        if(w>=2.0 || w<=0.5)
+           w_step = -w_step;
+        w += w_step;
+        P0 = [1.0, 1.0, 1.0];
+        P_ref = [0.0,0.0,0.0];
+        V = [0.0,1.0,0.0];
+        viewingMatrix = set3dViewingMatrix(P0,P_ref,V);
+        xw_min = -2.0;
+        xw_max = 2.0;
+        yw_min = -2.0;
+        yw_max = 2.0;
+        z_near = 0.0;
+        z_far = -4.0;
+        ortographicMatrix = ortographicProjection(-w,w,-w,w,z_near,z_far);
+        matrix = m4.identity();
+        matrix = m4.multiply(matrix,ortographicMatrix);
+        matrix = m4.multiply(matrix,viewingMatrix);
+        gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
+        gl.drawArrays(gl.TRIANGLES, 0, vertexData.length / 3);
 
         requestAnimationFrame(drawCube)
 
