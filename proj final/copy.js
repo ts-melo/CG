@@ -21,13 +21,15 @@ function main() {
   camera.lookAt(0, 0, -2);
 
   // Iluminação
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+  const ambientLight = new THREE.AmbientLight(0xffffff, -0.7);
   scene.add(ambientLight);
 
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5 );
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1 );
   directionalLight.position.set(0, 5, 10);
   directionalLight.castShadow = true;
   scene.add(directionalLight);
+  scene.innerHeight
+
   
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Optional: for softer shadows
@@ -42,16 +44,8 @@ function main() {
       if (child.isMesh) {
         child.castShadow = true; // Enable shadow casting
         child.receiveShadow = true; // Enable shadow receiving
-        if (child.material) {
-          child.material = new THREE.MeshBasicMaterial({
-            color: child.material.color,  // Usa a cor original do material
-            metalness : 0.5,
-            roughtness : 0.5,
-          });
-        }
       }
     });
-
     scene.add(model)
     console.log('model loaded', model)
   }, undefined, (error) => {
@@ -73,25 +67,22 @@ function main() {
   function adicionarFarol(x, y, z) {
     const farol = new THREE.PointLight(0xffffff, 1, 10); // Cor branca, intensidade 1, alcance de 10 unidades
     farol.position.set(x, y, z); // Posição do farol, no caso, posição no modelo do carro
-    farol.castShadow = true;
     scene.add(farol);
-    
   }
 
 
 
 
 
-// CENÁRIO
+
 
 
   // Criar estrada
   const roadGeometry = new THREE.PlaneGeometry(10,  400);
-  const roadMaterial = new THREE.MeshBasicMaterial({ color: 0x333333 });
+  const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
   const road = new THREE.Mesh(roadGeometry, roadMaterial);
   road.position.set(0, 0.1, 0)
   road.rotation.x = -Math.PI / 2;
-  road.receiveShadow = true;
   scene.add(road);
   // criar gramas
   const grassGeometry = new THREE.PlaneGeometry(400,400);
@@ -100,17 +91,26 @@ function main() {
   const grassLeft = new THREE.Mesh(grassGeometry, grassMaterial);
   grassLeft.position.set(-15, 0, 0);
   grassLeft.rotation.x = -Math.PI /2;
-  grassLeft.receiveShadow = true;
   scene.add(grassLeft);
 
   const grassRight = new THREE.Mesh(grassGeometry, grassMaterial);
   grassRight.position.set(15, 0, 0);
   grassRight.rotation.x = -Math.PI /2;
-  grassRight.receiveShadow = true;
   scene.add(grassRight);
 
   // cidade
-
+  function criarPredio(x, z, scene) {
+    const altura = Math.random() * 10 + 5; // Altura aleatória para o prédio
+    const largura = Math.random() * 5 + 3; // Largura aleatória
+    const profundidade = Math.random() * 5 + 3; // Profundidade aleatória
+  
+    const geometria = new THREE.BoxGeometry(largura, altura, profundidade);
+    const material = new THREE.MeshStandardMaterial({ color: 0x999999, roughness: 0.7 });
+    const predio = new THREE.Mesh(geometria, material);
+  
+    predio.position.set(x, altura / 2, z); // Posicionar o prédio
+    scene.add(predio);
+  }
   let x = -250
   for (let i = 0; i < 100; i++) {
     criarPredio(x, -200, scene);
@@ -155,19 +155,7 @@ function main() {
   animate();
 }
 
-function criarPredio(x, z, scene) {
-  const altura = Math.random() * 10 + 5; // Altura aleatória para o prédio
-  const largura = Math.random() * 5 + 3; // Largura aleatória
-  const profundidade = Math.random() * 5 + 3; // Profundidade aleatória
 
-  const geometria = new THREE.BoxGeometry(largura, altura, profundidade);
-  const material = new THREE.MeshBasicMaterial({ color: 0x999999, roughness: 0.7 });
-  const predio = new THREE.Mesh(geometria, material);
-
-  predio.position.set(x, altura / 2, z); // Posicionar o prédio
-  predio.receiveShadow = true;
-  scene.add(predio);
-}
 
 function criarFaixas(z, scene) {
   let x = 1;
@@ -187,12 +175,12 @@ function criarFaixas(z, scene) {
 function criarArvores(x,y, z, scene){
   //tronco
   const troncoGeometry = new THREE.CylinderGeometry(0.1, 0.2, 8, 8)
-  const troncoMaterial = new THREE.MeshBasicMaterial({color: 0x8B4513});
+  const troncoMaterial = new THREE.MeshStandardMaterial({color: 0x8B4513});
   const tronco = new THREE.Mesh(troncoGeometry, troncoMaterial)
   
   //copa
   const copaGeometry = new THREE.SphereGeometry(2, 16, 16);
-  const copaMaterial = new THREE.MeshBasicMaterial({color: 0x124712});
+  const copaMaterial = new THREE.MeshStandardMaterial({color: 0x228B22});
   const copa = new THREE.Mesh(copaGeometry, copaMaterial);
 
   tronco.position.set(x, y, z);
