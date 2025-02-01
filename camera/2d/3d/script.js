@@ -55,6 +55,7 @@ function main(){
         //primeiro
         gl.viewport(0,canvas.width/2,canvas.width/2, canvas.width/2);
         tetha +=1
+
         let P0 = [1.0*Math.cos(degToRad(tetha)), 1.0, 1.0*Math.sin(degToRad(tetha))];//camera gira em torno so cubo, com y em 1
         let P_ref = [0.0,0.0,0.0]; //aponta pra origem
         let V = [0.0,1.0,0.0]; // y view 
